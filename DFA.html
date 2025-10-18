@@ -68,7 +68,7 @@ h1 {
 
 input {
     padding: 16px 24px;
-    font-size: 1.1em;
+    font-size: 0.9em;
     border: 2px solid #e9d5ff;
     border-radius: 12px;
     background: white;
@@ -398,6 +398,7 @@ svg {
 @media (max-width: 1200px) {
     .container { padding: 30px; }
     h1 { font-size: 2em; }
+    .subtitle { font-size: 1em; }
     input { min-width: 100%; }
     .input-wrapper { flex-direction: column; }
     button { width: 100%; }
@@ -405,7 +406,141 @@ svg {
         grid-template-columns: 1fr;
     }
     svg {
-        height: 400px;
+        height: 350px;
+    }
+    .diagram-section {
+        padding: 30px 20px;
+    }
+    .steps-section {
+        padding: 25px 20px;
+        max-height: 400px;
+    }
+    .diagram-title {
+        font-size: 1.4em;
+        margin-bottom: 25px;
+    }
+    .steps-title {
+        font-size: 1.2em;
+    }
+    .state-text {
+        font-size: 24px;
+    }
+    .state-label {
+        font-size: 13px;
+    }
+    .transition-label {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container { 
+        padding: 20px; 
+        border-radius: 16px;
+    }
+    h1 { 
+        font-size: 1.6em; 
+        margin-bottom: 8px;
+    }
+    .subtitle { font-size: 0.9em; }
+    .header { margin-bottom: 25px; }
+    .input-section {
+        padding: 25px 20px;
+    }
+    button {
+        padding: 14px 24px;
+        font-size: 0.95em;
+    }
+    svg {
+        height: 280px;
+    }
+    .diagram-section {
+        padding: 25px 15px;
+    }
+    .steps-section {
+        padding: 20px 15px;
+        max-height: 350px;
+    }
+    .diagram-title {
+        font-size: 1.2em;
+        margin-bottom: 20px;
+    }
+    .steps-title {
+        font-size: 1.1em;
+        margin-bottom: 15px;
+    }
+    .step-item {
+        padding: 12px 15px;
+        font-size: 0.85em;
+        margin-bottom: 10px;
+    }
+    .step-number {
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+        font-size: 0.8em;
+        margin-right: 8px;
+    }
+    .state-circle {
+        stroke-width: 2.5;
+    }
+    .state-text {
+        font-size: 20px;
+    }
+    .state-label {
+        font-size: 11px;
+    }
+    .transition-label {
+        font-size: 14px;
+    }
+    .transition-path {
+        stroke-width: 2;
+    }
+    .result-box {
+        font-size: 1.1em;
+        padding: 18px;
+    }
+    .info-box {
+        padding: 20px;
+    }
+    .info-title {
+        font-size: 1.1em;
+        margin-bottom: 12px;
+    }
+    .info-content {
+        font-size: 0.95em;
+        line-height: 1.7;
+    }
+    .badge {
+        padding: 4px 10px;
+        font-size: 0.8em;
+    }
+}
+
+@media (max-width: 480px) {
+    .container { 
+        padding: 15px;
+        margin: 10px;
+    }
+    h1 { font-size: 1.4em; }
+    .subtitle { font-size: 0.85em; }
+    svg {
+        height: 240px;
+        viewBox: 0 0 900 300;
+    }
+    .diagram-section {
+        padding: 20px 10px;
+    }
+    .steps-section {
+        padding: 15px 10px;
+    }
+    .step-item {
+        padding: 10px 12px;
+        font-size: 0.8em;
+    }
+    button {
+        padding: 12px 20px;
+        font-size: 0.9em;
     }
 }
 </style>
@@ -461,7 +596,7 @@ svg {
                 <text x="437" y="140" class="transition-label" font-size="20">b</text>
 
                 <!-- q2 to q0 'b' (curved bottom) -->
-                <path id="trans-q2-q0" d="M 498,172 Q 350,315 152,186" class="transition-path" stroke-width="3" marker-end="url(#arrow)"/>
+                <path id="trans-q2-q0" d="M 498,172 Q 350,255 152,182" class="transition-path" stroke-width="3" marker-end="url(#arrow)"/>
                 <text x="335" y="270" class="transition-label" font-size="20">b</text>
 
                 <!-- q2 to q3 'a' -->
