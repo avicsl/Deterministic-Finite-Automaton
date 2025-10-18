@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DFA Simulator – No "aba" Substring</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #fafafa;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    background: white;
+    border-radius: 24px;
+    padding: 50px;
+    max-width: 1350px;
+    width: 100%;
+    box-shadow: 0 10px 50px rgba(0,0,0,0.08);
+    animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+h1 {
+    font-size: 2.8em;
+    color: #ec4899;
+    margin-bottom: 12px;
+    font-weight: 800;
+}
+
+.subtitle {
+    color: #64748b;
+    font-size: 1.15em;
+    font-weight: 500;
+}
+
+.input-section {
+    background: #fdf2f8;
+    border-radius: 16px;
+    padding: 35px;
+    margin-bottom: 30px;
+    border: 2px solid #fbcfe8;
+}
+
+.input-wrapper {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+input {
+    padding: 16px 24px;
+    font-size: 1.1em;
+    border: 2px solid #e9d5ff;
+    border-radius: 12px;
+    background: white;
+    font-weight: 600;
+    color: #334155;
+    min-width: 400px;
+    transition: all 0.3s ease;
+}
+
+input:focus {
+    outline: none;
+    border-color: #a855f7;
+    box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.1);
+    transform: translateY(-2px);
+}
+
+button {
+    padding: 16px 32px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.05em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-run {
+    background: #3b82f6;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+}
+
+.btn-run:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); 
+    background: #2563eb;
+}
+
+.btn-run:active { transform: translateY(0px); }
+
+.btn-clear {
+    background: #ec4899;
+    box-shadow: 0 4px 14px rgba(236, 72, 153, 0.3);
+}
+
+.btn-clear:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4); 
+    background: #db2777;
+}
+
+.btn-clear:active { transform: translateY(0px); }
+
+.result-box {
+    display: none;
+    padding: 24px;
+    border-radius: 16px;
+    text-align: center;
+    font-size: 1.4em;
+    font-weight: 700;
+    margin-bottom: 30px;
+    animation: slideDown 0.5s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.result-accepted {
+    background: #d1fae5;
+    color: #065f46;
+    border: 3px solid #10b981;
+}
+
+.result-rejected {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 3px solid #ef4444;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+    margin-bottom: 25px;
+    transition: all 0.5s ease;
+}
+
+.main-content.split-view {
+    grid-template-columns: 7fr 3fr;
+}
+
+.diagram-section {
+    background: #eff6ff;
+    border-radius: 20px;
+    padding: 50px;
+    border: 2px solid #dbeafe;
+    transition: all 0.5s ease;
+}
+
+.main-content.split-view .diagram-section {
+    order: 1;
+}
+
+.diagram-title {
+    font-size: 1.8em;
+    color: #1e3a8a;
+    margin-bottom: 40px;
+    text-align: center;
+    font-weight: 700;
+}
+
+svg {
+    width: 100%;
+    height: 500px;
+    display: block;
+    margin: 0 auto;
+}
+
+.state-group {
+    cursor: pointer;
+    transition: all 0.4s ease;
+}
+
+.state-circle {
+    fill: white;
+    stroke: #cbd5e1;
+    stroke-width: 3;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.08));
+    transition: all 0.4s ease;
+}
+
+.state-text {
+    fill: #334155;
+    font-size: 28px;
+    font-weight: 700;
+    pointer-events: none;
+    transition: all 0.4s ease;
+}
+
+.state-label {
+    fill: #64748b;
+    font-size: 16px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.active .state-circle {
+    fill: #ec4899;
+    stroke: #ec4899;
+    stroke-width: 4;
+    filter: drop-shadow(0 4px 16px rgba(236, 72, 153, 0.4));
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.active .state-text { fill: white; }
+
+.trap .state-circle {
+    fill: #fef2f2;
+    stroke: #f87171;
+    stroke-width: 3;
+}
+
+.trap .state-text { fill: #991b1b; }
+
+.accepting .state-circle {
+    stroke: #60a5fa;
+    stroke-width: 3;
+}
+
+.transition-path {
+    fill: none;
+    stroke: #cbd5e1;
+    stroke-width: 3;
+    marker-end: url(#arrow);
+    transition: all 0.3s ease;
+}
+
+.active-transition {
+    stroke: #ec4899;
+    stroke-width: 4;
+    animation: flowPath 1s ease;
+}
+
+@keyframes flowPath {
+    0% { stroke-dasharray: 10; stroke-dashoffset: 20; }
+    100% { stroke-dasharray: 10; stroke-dashoffset: 0; }
+}
+
+.transition-label {
+    fill: #475569;
+    font-size: 20px;
+    font-weight: 800;
+    text-anchor: middle;
+}
+
+.steps-section {
+    background: #faf5ff;
+    border-radius: 20px;
+    padding: 30px;
+    border: 2px solid #e9d5ff;
+    display: none;
+    animation: slideIn 0.5s ease;
+    max-height: 600px;
+    overflow-y: auto;
+    transition: all 0.5s ease;
+}
+
+.main-content.split-view .steps-section {
+    order: 2;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.steps-title {
+    font-size: 1.35em;
+    color: #6b21a8;
+    margin-bottom: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.step-item {
+    background: white;
+    border-left: 4px solid #c084fc;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    font-size: 0.9em;
+    animation: slideRight 0.4s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    line-height: 1.5;
+}
+
+@keyframes slideRight {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.step-current {
+    background: #f3e8ff;
+    border-left-color: #9333ea;
+    font-weight: 600;
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(147, 51, 234, 0.15);
+}
+
+.step-number {
+    display: inline-block;
+    background: #a855f7;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 28px;
+    font-weight: 700;
+    margin-right: 10px;
+    font-size: 0.85em;
+}
+
+.step-current .step-number {
+    background: #9333ea;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.info-box {
+    background: #fffbeb;
+    border-radius: 16px;
+    padding: 30px;
+    border: 2px solid #fde68a;
+}
+
+.info-title {
+    font-weight: 800;
+    color: #92400e;
+    margin-bottom: 18px;
+    font-size: 1.3em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-content {
+    color: #78350f;
+    line-height: 2;
+    font-size: 1.05em;
+}
+
+.state-desc {
+    display: block;
+    margin: 10px 0;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-weight: 700;
+    margin-right: 10px;
+}
+
+.badge-start { background: #dbeafe; color: #1e40af; }
+.badge-progress { background: #fef3c7; color: #92400e; }
+.badge-trap { background: #fee2e2; color: #991b1b; }
+.badge-accept { background: #d1fae5; color: #065f46; }
+
+@media (max-width: 1200px) {
+    .container { padding: 30px; }
+    h1 { font-size: 2em; }
+    input { min-width: 100%; }
+    .input-wrapper { flex-direction: column; }
+    button { width: 100%; }
+    .main-content.split-view {
+        grid-template-columns: 1fr;
+    }
+    svg {
+        height: 400px;
+    }
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Deterministic Finite Automaton</h1>
+        <p class="subtitle">Accepts string with no <strong>"aba"</strong> subtring</p>
+    </div>
+
+    <div class="input-section">
+        <div class="input-wrapper">
+            <input id="inputString" type="text" placeholder="Type your string (a's and b's only)" maxlength="55" autocomplete="off">
+            <button class="btn-run" onclick="checkString()">▶ Analyze</button>
+            <button class="btn-clear" onclick="clearAll()">↺ Reset</button>
+        </div>
+    </div>
+
+    <div id="resultBox" class="result-box"></div>
+
+    <div class="main-content" id="mainContent">
+        <div class="diagram-section">
+            <div class="diagram-title">State Transition Diagram</div>
+            <svg viewBox="0 0 900 300">
+                <defs>
+                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L0,6 L9,3 z" fill="#cbd5e1"/>
+                    </marker>
+                    <marker id="arrow-active" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L0,6 L9,3 z" fill="#ec4899"/>
+                    </marker>
+                </defs>
+
+                <!-- Start arrow -->
+                <path id="trans-start" d="M 40,150 L 115,150" class="transition-path" stroke="#ec4899" stroke-width="3" marker-end="url(#arrow-active)"/>
+                <text x="70" y="140" class="transition-label" fill="#ec4899" font-size="15" font-weight="700">START</text>
+
+                <!-- q0 self-loop 'b' -->
+                <path id="trans-q0-b" d="M 135,118 C 135,75 135,75 150,72 C 165,75 165,75 165,118" class="transition-path" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+                <text x="150" y="67" class="transition-label" font-size="20">b</text>
+
+                <!-- q0 to q1 'a' -->
+                <path id="trans-q0-q1" d="M 185,150 L 315,150" class="transition-path" stroke-width="3" marker-end="url(#arrow)"/>
+                <text x="247" y="140" class="transition-label" font-size="20">a</text>
+
+                <!-- q1 self-loop 'a' -->
+                <path id="trans-q1-a" d="M 335,118 C 335,75 335,75 350,72 C 365,75 365,75 365,118" class="transition-path" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+                <text x="350" y="67" class="transition-label" font-size="20">a</text>
+
+                <!-- q1 to q2 'b' -->
+                <path id="trans-q1-q2" d="M 385,150 L 490,150" class="transition-path" stroke-width="3" marker-end="url(#arrow)"/>
+                <text x="437" y="140" class="transition-label" font-size="20">b</text>
+
+                <!-- q2 to q0 'b' (curved bottom) -->
+                <path id="trans-q2-q0" d="M 498,172 Q 350,315 152,186" class="transition-path" stroke-width="3" marker-end="url(#arrow)"/>
+                <text x="335" y="270" class="transition-label" font-size="20">b</text>
+
+                <!-- q2 to q3 'a' -->
+                <path id="trans-q2-q3" d="M 560,150 L 686,150" class="transition-path" stroke-width="3" marker-end="url(#arrow)"/>
+                <text x="620" y="140" class="transition-label" font-size="20">a</text>
+
+                <!-- q3 self-loop 'a,b' -->
+                <path id="trans-q3-loop" d="M 705,118 C 705,75 705,75 720,72 C 735,75 735,75 735,118" class="transition-path" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+                <text x="720" y="67" class="transition-label" font-size="18">a, b</text>
+
+                <!-- States -->
+                <g id="q0" class="state-group active accepting">
+                    <circle cx="150" cy="150" r="40" class="state-circle"/>
+                    <circle cx="150" cy="150" r="35" fill="none" stroke="#60a5fa" stroke-width="3"/>
+                    <text x="150" y="160" class="state-text" text-anchor="middle">q₀</text>
+                    <text x="150" y="215" class="state-label" text-anchor="middle">Start / Safe</text>
+                </g>
+
+                <g id="q1" class="state-group accepting">
+                    <circle cx="350" cy="150" r="40" class="state-circle"/>
+                    <circle cx="350" cy="150" r="35" fill="none" stroke="#60a5fa" stroke-width="3"/>
+                    <text x="350" y="160" class="state-text" text-anchor="middle">q₁</text>
+                    <text x="350" y="215" class="state-label" text-anchor="middle">Seen 'a'</text>
+                </g>
+
+                <g id="q2" class="state-group accepting">
+                    <circle cx="525" cy="150" r="40" class="state-circle"/>
+                    <circle cx="525" cy="150" r="35" fill="none" stroke="#60a5fa" stroke-width="3"/>
+                    <text x="525" y="160" class="state-text" text-anchor="middle">q₂</text>
+                    <text x="525" y="215" class="state-label" text-anchor="middle">Seen 'ab'</text>
+                </g>
+
+                <g id="q3" class="state-group trap">
+                    <circle cx="720" cy="150" r="40" class="state-circle"/>
+                    <text x="720" y="160" class="state-text" text-anchor="middle">q₃</text>
+                    <text x="720" y="215" class="state-label" text-anchor="middle">TRAP: "aba" Found</text>
+                </g>
+            </svg>
+        </div>
+
+        <div id="stepsSection" class="steps-section">
+            <div class="steps-title">📋 Step-by-Step Execution</div>
+            <div id="stepsContainer"></div>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <div class="info-title">📚 How This DFA Works</div>
+        <div class="info-content">
+            <div class="state-desc"><span class="badge badge-start">q₀</span> Starting state - no progress toward "aba"</div>
+            <div class="state-desc"><span class="badge badge-progress">q₁</span> Found 'a' - watching for 'b' next</div>
+            <div class="state-desc"><span class="badge badge-progress">q₂</span> Found 'ab' - critical state! One 'a' away from rejection</div>
+            <div class="state-desc"><span class="badge badge-trap">q₃</span> Trap state - "aba" detected, string is REJECTED</div>
+            <br>
+            <strong>Results:</strong><br>
+            <span class="badge badge-accept">✓ ACCEPT</span> String does NOT contain "aba"<br>
+            <span class="badge badge-trap">✗ REJECT</span> String contains "aba" substring
+        </div>
+    </div>
+</div>
+
+<script>
+const transitions = {
+    q0: { a: 'q1', b: 'q0' },
+    q1: { a: 'q1', b: 'q2' },
+    q2: { a: 'q3', b: 'q0' },
+    q3: { a: 'q3', b: 'q3' }
+};
+
+const stateDescriptions = {
+    q0: "Safe state - no 'aba' pattern detected yet",
+    q1: "Saw 'a' - could be start of 'aba'",
+    q2: "Dangerous! Saw 'ab' - one more 'a' triggers rejection",
+    q3: "REJECTED! The forbidden 'aba' pattern was found"
+};
+
+const transitionPaths = {
+    'q0-b': 'trans-q0-b',
+    'q0-a': 'trans-q0-q1',
+    'q1-a': 'trans-q1-a',
+    'q1-b': 'trans-q1-q2',
+    'q2-b': 'trans-q2-q0',
+    'q2-a': 'trans-q2-q3',
+    'q3-a': 'trans-q3-loop',
+    'q3-b': 'trans-q3-loop'
+};
+
+let animationRunning = false;
+
+function highlightState(id) {
+    document.querySelectorAll('.state-group').forEach(s => s.classList.remove('active'));
+    document.getElementById(id)?.classList.add('active');
+}
+
+function highlightTransition(from, input) {
+    document.querySelectorAll('.transition-path').forEach(p => {
+        p.classList.remove('active-transition');
+        p.setAttribute('marker-end', 'url(#arrow)');
+    });
+    
+    const pathId = transitionPaths[`${from}-${input}`];
+    if (pathId) {
+        const path = document.getElementById(pathId);
+        if (path) {
+            path.classList.add('active-transition');
+            path.setAttribute('marker-end', 'url(#arrow-active)');
+        }
+    }
+}
+
+function addStep(stepNum, char, fromState, toState, description) {
+    const stepsContainer = document.getElementById('stepsContainer');
+    const stepDiv = document.createElement('div');
+    stepDiv.className = 'step-item';
+    stepDiv.id = `step-${stepNum}`;
+    
+    const arrow = char ? `Reading '${char}'` : 'Initial';
+    stepDiv.innerHTML = `
+        <span class="step-number">${stepNum}</span>
+        <span style="font-weight: 600;">${arrow}:</span> <strong>${fromState}</strong> → <strong>${toState}</strong>
+        <br><small style="margin-left: 38px; color: #64748b; font-size: 0.85em;">${description}</small>
+    `;
+    
+    stepsContainer.appendChild(stepDiv);
+}
+
+function highlightCurrentStep(stepNum) {
+    document.querySelectorAll('.step-item').forEach(s => s.classList.remove('step-current'));
+    const currentStep = document.getElementById(`step-${stepNum}`);
+    if (currentStep) {
+        currentStep.classList.add('step-current');
+        currentStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function checkString() {
+    if (animationRunning) return;
+    
+    const input = document.getElementById('inputString').value.trim();
+    const result = document.getElementById('resultBox');
+    const stepsSection = document.getElementById('stepsSection');
+    const stepsContainer = document.getElementById('stepsContainer');
+    const mainContent = document.getElementById('mainContent');
+    
+    if (!/^[ab]*$/.test(input)) {
+        result.style.display = 'block';
+        result.className = 'result-box result-rejected';
+        result.textContent = '⚠️ Invalid Input! Please use only letters "a" and "b"';
+        return;
+    }
+
+    if (input === '') {
+        result.style.display = 'block';
+        result.className = 'result-box result-accepted';
+        result.textContent = '✅ Empty String Accepted! (Contains no "aba")';
+        return;
+    }
+
+    animationRunning = true;
+    stepsContainer.innerHTML = '';
+    stepsSection.style.display = 'block';
+    mainContent.classList.add('split-view');
+    result.style.display = 'none';
+
+    let state = 'q0';
+    let stepNum = 1;
+    
+    addStep(stepNum, null, 'START', state, stateDescriptions[state]);
+    highlightCurrentStep(stepNum);
+    stepNum++;
+
+    let i = 0;
+
+    function processStep() {
+        if (i < input.length) {
+            const char = input[i];
+            const prevState = state;
+            state = transitions[state][char];
+            
+            highlightTransition(prevState, char);
+            
+            setTimeout(() => {
+                highlightState(state);
+                addStep(stepNum, char, prevState, state, stateDescriptions[state]);
+                highlightCurrentStep(stepNum);
+                stepNum++;
+                i++;
+                setTimeout(processStep, 800);
+            }, 400);
+        } else {
+            setTimeout(() => {
+                const isRejected = state === 'q3';
+                result.style.display = 'block';
+                result.className = isRejected ? 'result-box result-rejected' : 'result-box result-accepted';
+                result.textContent = isRejected ? 
+                    `❌ STRING REJECTED! Found "aba" substring in "${input}"` : 
+                    `✅ STRING ACCEPTED! No "aba" found in "${input}"`;
+                animationRunning = false;
+            }, 600);
+        }
+    }
+
+    setTimeout(processStep, 800);
+}
+
+function clearAll() {
+    if (animationRunning) return;
+    
+    document.getElementById('inputString').value = '';
+    document.getElementById('resultBox').style.display = 'none';
+    document.getElementById('stepsSection').style.display = 'none';
+    document.getElementById('stepsContainer').innerHTML = '';
+    document.getElementById('mainContent').classList.remove('split-view');
+    
+    document.querySelectorAll('.transition-path').forEach(p => {
+        p.classList.remove('active-transition');
+        p.setAttribute('marker-end', 'url(#arrow)');
+    });
+    
+    highlightState('q0');
+}
+
+// Initialize
+highlightState('q0');
+</script>
+</body>
+</html>
