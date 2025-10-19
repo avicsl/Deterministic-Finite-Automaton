@@ -728,7 +728,6 @@ function highlightCurrentStep(stepNum) {
     const currentStep = document.getElementById(`step-${stepNum}`);
     if (currentStep) {
         currentStep.classList.add('step-current');
-        currentStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 }
 
